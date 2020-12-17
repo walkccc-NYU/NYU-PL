@@ -1,0 +1,457 @@
+\documentclass[a4paper,11pt]{article} % This defines the style of your paper
+
+\usepackage[top = 1in, bottom = 0.8in, left = 0.5in, right = 0.5in]{geometry}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\setlength{\parindent}{0in}
+\usepackage{tikz-qtree}
+
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dark_green}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\usepackage{amsmath}
+
+\lstset{
+  frame=none,
+  language=Java,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dark_green},
+  stringstyle=\color{mauve},
+  breakatwhitespace=true,
+  tabsize=2
+}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\lhead{\footnotesize Programming Languages Homework 2}
+\rhead{\footnotesize Peng-Yu Chen}
+\cfoot{\footnotesize \thepage}
+
+\begin{document}
+\thispagestyle{empty}
+
+\begin{tabular}{p\linewidth}
+{\large \bf Programming Languages - Homework 2} \\ Name: Peng-Yu Chen (pyc305) \\
+\hline
+\end{tabular}
+
+\vspace{0.4cm}
+
+\begin{enumerate}
+  \item % 1.
+  \begin{enumerate}
+    \item % (a)
+    \begin{enumerate}
+      \item [(1)] $(\lambda x.E) [M/x] = (\lambda x.E)$
+      \item [(2)] $(\lambda x.E) M \underset{\beta}{\Leftrightarrow} E[M/x]$
+    \end{enumerate}
+
+    In (1), there are no free occurrences of $x$ in $(\lambda x. E)$, so we
+    substitute nothing. \\
+    In (2), we substitute $x$ in $E$ with $M$.
+
+    \item % (b)
+          $Y = (\lambda h.~
+            (\lambda x.~h~(x~x))
+            (\lambda x.~h~(x~x))
+          )$
+
+    \item % (c)
+    \begin{align*}
+      Yf &=(\lambda h.~ (\lambda x.~h~(x~x))~(\lambda x.~h~(x~x)))~f
+         &\text{definition of $Y$} \\
+         &\underset{\beta}{\Leftrightarrow}
+          (\lambda x.~f~(x~x))~(\lambda x.~f~(x~x))
+         &\text{$\beta$-reduction of $\lambda h$} \\
+         &\underset{\beta}{\Leftrightarrow}
+          f~((\lambda x.~f~(x~x))~(\lambda x.~f~(x~x)))
+         &\text{$\beta$-reduction of $\lambda x$} \\
+         &= f~(Yf) &\text{the second equality}
+    \end{align*}
+
+    \item % (d)
+    \begin{align*}
+    \text{Let}~
+      \code{fib}~&\text{be}~Yf \\
+               f~&\text{be}~(\lambda f.~\lambda x.~\code{if (< x 2) x (+ (f (- x 1)) (f (- x 2)))})
+    \end{align*}
+
+    \begin{align*}
+    Yf &= f~(Yf) \\
+    \code{fib} &= f~\code{fib} \\
+    \code{fib 3} &= f~\code{fib 3} \\
+    &= (\lambda f.~\lambda x.~\code{if (< x 2) x (+ (f (- x 1)) (f (- x 2)))})~\code{fib}~3 \\
+    &\underset{\beta}{\Leftrightarrow} (\lambda x.~\code{if (< x 2) x (+ (fib (- x 1)) (fib (- x 2)))})~3 \\
+    &\underset{\beta}{\Leftrightarrow} \code{if (< 3 2) 3 (+ (fib (- 3 1)) (fib (- 3 2)))} \\
+    &\underset{\delta}{\Leftrightarrow} \code{+ (fib 2) (fib 1)}
+    \end{align*}
+
+    \item % (e)
+    Church-Rosser Theorem I: if two expressions $E_1$ and $E_2$ are interconvertible,
+    then there is an expression $E$, which can be converted from both $E_1$ and $E_2$. \\
+    By having the above property, we can conclude that there is no way a single expression
+    can be converted to two different normal forms. \\
+
+    Church-Rosser Theorem II: if an expression $E_1$ can be converted to a normal
+    form expression $E_2$, then we can use normal order reduction to convert $E_1$ to $E_2$.
+
+  \end{enumerate}
+
+  \item % 2.
+  \begin{enumerate}
+    \item % (a)
+    % ('a -> 'b) -> ('b list -> 'c list) -> ('c -> 'd) -> 'a -> 'd
+    %   f             g                       h            a
+    %
+    % use map to constraint that (g [f a]): 'c list
+    % also, since h is just after map, so h: 'c -> 'd
+    \code{fun foo f g h a = hd (map h (g [f a]))}
+
+    \item % (b)
+    % sml:(int list -> 'a) -> ('b * 'c -> bool) -> 'b -> int list * 'c -> 'a
+    \code{(int list -> 'c) -> ('a * 'b -> bool) -> 'a -> int list * 'b -> 'c}
+
+    \item % (c)
+    \code{x}'s type is unconstraint, so let's assume its type is \code{'a}. \\
+    \code{z}'s type is unconstraint, so let's assume its type is \code{'b}. \\
+    \code{w}'s type is constraint since \code{bar} applies to \code{w} and also applies
+    to \code{[1, 2, 3]}, \code{w}'s type is \code{int list}. \\
+    \code{y}'s type is constraint by \code{if x > z then y else w}, \code{y}'s type
+    should be same as \code{w}'s type \code{int list}. \\
+    \code{bar}'s type is constraint by \code{bar w = if x > z then y else w}, so its type
+    is \code{int list -> int list}. \\
+    \code{(op >)}'s type is constraint by \code{x > z}, so its type should be
+    \code{('a * 'b -> bool)} \\
+    \code{f}'s input type is constraint by \code{f (bar [1, 2, 3])}, which
+    is \code{int list}. \\
+    \code{f}'s output type is unconstraint, so let's assume it's \code{'c}. \\
+    Combine the parameters' types of \code{foo} together, we have:
+
+    \begin{itemize}
+      \item \code{f:~(int list -> 'c)}
+      \item \code{(op >):~('a * 'b -> bool)}
+      \item \code{x:~'a}
+      \item \code{(y, z):~int list * 'b}
+      \item return type is \code{'c}
+    \end{itemize}
+  \end{enumerate}
+
+  \item % 3.
+  \begin{enumerate}
+    \item % (a)
+    \begin{enumerate}
+      \item Encapsulation of data with the functions that operate on that data
+      \item Inheritance
+      \item Subtyping with dynamic dispatch
+    \end{enumerate}
+    \item % (b)
+    Assume we have a class \code{Vehicle} and a class \code{Car} which inherits
+    from the class \code{Vehicle}.
+
+    But, a \code{Car} object may have more fields than a \code{Vehicle} object.
+
+    We know that the set defined by a type (class) \code{T} is the set of all
+    objects that have the properties of \code{T}, and may have additional properties.
+
+    Since all objects of \code{Car} have the properties of \code{Vehicle}, and
+    may have additional properties, all objects in \code{Car} set are also in
+    \code{Vehicle} set. So, the set of \code{Car} $\subseteq$ the set
+    of \code{Vehicle}.
+
+    \item % (c)
+    Assume we have the following two classe \code{Vehicle} and \code{Car}:
+
+\begin{lstlisting}
+class Vehicle {
+  int speed;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+class Car extends Vehicle {
+  String model;
+}
+\end{lstlisting}
+
+    Since all objects of \code{Car} have the properties of \code{Vehicle}, and
+    have an additional property \code{model}, all objects in \code{Car} set are
+    also in \code{Vehicle} set. So, the set of \code{Car} $\subseteq$ the set of
+    \code{Vehicle}.
+
+    \item % (d)
+    \begin{enumerate}
+      \item [(1)] Suppose we have a class \code{A} and a class \code{B} which
+      inherits from the class \code{A}. We cannot call \code{f(h)} because
+      \code{h} gets called on an \code{A} object. That's not allowed since an
+      \code{A} object is not a \code{B} object. In the following example, we
+      access \code{b.y} which is a field that only appears in \code{B} and not in
+      \code{A}.
+
+\begin{lstlisting}
+object CovariantDemo extends App {
+  class A {
+    val x = 1
+  }
+
+  class B extends A {
+    val y = 2
+  }
+
+  def f(g: A => Int) = g(new A)
+  def h(b: B) = b.y  // access a field that only appears in B and not in A
+
+  f(h)  // not allowed because an A object is not a B object
+}
+\end{lstlisting}
+
+      \item [(2)] Suppose we have a class \code{A} and a class \code{B} which
+      inherits from the class \code{A}. In the following example, calling
+      \code{g(3)} is actually calling \code{h(3)} which returns an \code{A}
+      object. However, we cannot assign an \code{A} object to type \code{B}.
+
+\begin{lstlisting}
+object ContravariantDemo extends App {
+  class A
+  class B extends A
+
+  def f(g: Int => B): Unit = {
+    val b: B = g(3) // actually calling h(3) which returns an A object
+  }
+  def h(x: Int) = new A
+
+  f(h)  // not allowed because we cannot assign an A object to type B
+}
+\end{lstlisting}
+
+    \end{enumerate}
+    \item % (e)
+    Suppose we have a class \code{A} and a class \code{B} which inherits from
+    the class \code{A}.
+
+    \begin{enumerate}
+      \item [(1)]
+      We know that \code{A => Int} contains the set of all functions that can be
+      called on an \code{A} object and return an \code{Int}. For example,
+      \code{def f(a:~A) = 1} is in \code{A => Int}.
+
+      Also, any functions in \code{A => Int} can be called on a \code{B}
+      object and is therefore in \code{B => Int}.
+
+      Therefore, \code{A => Int} $\subseteq$ \code{B => Int}.
+      \item [(2)]
+      Consider \code{def f(g:~Int) = new B}, the set of all functions that can
+      be called on an \code{Int} and return a \code{B} object.
+
+      Since any function returning a \code{B} is returning an \code{A}, all
+      functions in \code{Int => B} are in \code{Int => A}.
+
+      Therefore \code{Int => B} $\subseteq$ \code{Int => A}.
+    \end{enumerate}
+  \end{enumerate}
+
+  \item % 4.
+  \begin{enumerate}
+    \item % (a)
+    Suppose the compiler allows covariant subtyping among instances of a generic
+    class. Assume \code{ArrayList<B>} is a subtype of \code{ArrayList<A>}:
+
+\begin{lstlisting}
+void addA(ArrayList<A> al) {
+  al.add(new A());
+}
+
+ArrayList<B> bl = new ArrayList<>();
+addA(bl);          // assume ArrayList<B> is a subtype of ArrayList<A>
+B b = bl.get(0); // error, returns an A, which is not a B
+\end{lstlisting}
+
+    \item % (b)
+
+\begin{lstlisting}
+void addA(ArrayList<? super A> al) {
+  al.add(new A()); // it's okay to add an A to an ArrayList of elements of
+                     // A's supertype (including A)
+}
+\end{lstlisting}
+
+  \end{enumerate}
+
+  \item % 5.
+  \begin{enumerate}
+    \item % (a)
+\begin{lstlisting}
+abstract class Tree[T <: Ordered[T]]
+case class Node[T <: Ordered[T]](v: T, l: Tree[T], r: Tree[T]) extends Tree[T]
+case class Leaf[T <: Ordered[T]](v: T) extends Tree[T]
+
+class OrderedInt(x: Int) extends Ordered[OrderedInt] {
+  def get = x
+  def compare(that: OrderedInt) = x - that.get
+  override def toString(): String = (s"$x")
+}
+
+object Prog {
+  def min[T <: Ordered[T]](tree: Tree[T]): T = tree match {
+    case Node(value, left, right) =>
+      val minL = min(left)
+      val minR = min(right)
+      val minChild = if (minL < minR) minL else minR
+      return if (value < minChild) value else minChild
+    case Leaf(value) => value
+  }
+
+  def main(args: Array[String]) = {
+    val x: Tree[OrderedInt] = Node(
+      new OrderedInt(-1),
+      Node(new OrderedInt(0), Leaf(new OrderedInt(3)), Leaf(new OrderedInt(5))),
+      Node(new OrderedInt(8), Leaf(new OrderedInt(7)), Leaf(new OrderedInt(1)))
+    )
+
+    print(min(x)) // should print -1
+  }
+}
+\end{lstlisting}
+
+    \item % (b)
+\begin{lstlisting}
+class A(x: Int) {
+  override def toString() = "A<" + x + ">"
+}
+
+class B(x: Int, y: Int) extends A(x) {
+  override def toString() = "B<" + x + "," + y + ">"
+}
+
+class C[+E](l: List[E]) {
+  override def toString() = (s"$l")
+}
+\end{lstlisting}
+
+    \item % (c)
+\begin{lstlisting}
+object CovariantDemo {
+  def printC(l: C[A]) = {
+    println(l)
+  }
+
+  def main(args: Array[String]) = {
+    val listA = new C(List(new A(1)))
+    val listB = new C(List(new B(1, 2)))
+
+    printC(listA)
+    printC(listB) // uses covariant subtyping (C[B] <: C[A])
+  }
+}
+\end{lstlisting}
+
+    \item % (d)
+\begin{lstlisting}
+class A(x: Int) {
+  override def toString() = "A<" + x + ">"
+}
+
+class B(x: Int, y: Int) extends A(x) {
+  override def toString() = "B<" + x + "," + y + ">"
+}
+
+class C[-E]() {
+  var l: List[Any] = List()
+  def insert(x: E) = l = x :: l
+
+  override def toString() = (s"$l")
+}
+\end{lstlisting}
+
+    \item % (e)
+\begin{lstlisting}
+object ContravariantDemo {
+  def insertC(l: C[B], b: B) =
+    l.insert(b)
+
+  def main(args: Array[String]) = {
+    val listB = new C[B]()
+    val listA = new C[A]()
+
+    insertC(listB, new B(1, 2))
+    insertC(listA, new B(3, 4)) // uses contravariant subtyping (C[A] <: C[B])
+    listA.insert(new A(5))
+
+    println(listB)
+    println(listA)
+  }
+}
+\end{lstlisting}
+
+  \end{enumerate}
+
+  \item % 6.
+  \begin{enumerate}
+    \item % (a)
+
+    Mark-and-sweep garbage collector (GC) won't be affected if there's a cycle,
+    while reference counting collector might need a backup mark-and-sweep collector
+    when the heap fills up with cycles.
+
+    \item % (b)
+
+    \begin{itemize}
+      \item Copying GC compacts the live objects, so we could use a heap pointer
+      for faster storage allocation.
+      \item Unlike mark-and-sweep GC, the cost of copying GC is proportional to
+      the amount of the live objects, not the size of the heap.
+    \end{itemize}
+
+    \item % (c)
+
+    Generational copying GC uses many heaps instead of two heaps.
+    Each heap contains objects of similar age. These heaps are called generations,
+    for  obvious reasons. When a heap fills up, the live objects in that heap is
+    copied to the next (older) heap.
+
+    When a heap fills up, the generational copying GC copies the live objects in
+    only that heap to the next older heap, so no other heap is touched during GC.
+
+    The advantages of generational copying GC over the simple copying GC are:
+
+    \begin{itemize}
+      \item Since the youngest heap doesn't contain all the older objects, rather
+      only the youngest objects, GC will be triggered less frequently.
+
+      \item Since young objects tend to die at a higher rate than older objects,
+      and only live objects are copied to the older heap, GC will take less time
+      on the youngest heap.
+
+      \item GC will rarely happen on the older heaps which contain most of the
+      live objects.
+    \end{itemize}
+
+    \item % (d)
+
+\begin{lstlisting}
+void delete(Object* x) {
+  x->refcount = x->refcount - 1;
+  if (x->refcount == 0) {
+    for (Object* child : x->children) {
+      delete(child);
+    }
+    addToFreeList(x);
+  }
+}
+\end{lstlisting}
+  \end{enumerate}
+
+\end{enumerate}
+
+\end{document}

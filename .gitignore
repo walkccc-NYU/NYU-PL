@@ -1,0 +1,20 @@
+main
+*.txt
+*.o
+*.ali
+*.sh
+*.zip
+
+# Code Files
+*.class
+*.conf
+.metals
+.vscode
+
+# LaTeX
+__latexindent_temp.tex
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
